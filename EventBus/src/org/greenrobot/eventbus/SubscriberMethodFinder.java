@@ -85,8 +85,10 @@ class SubscriberMethodFinder {
                     }
                 }
             } else {
+                // 通过反射方式获取订阅者及订阅者方法的关系表
                 findUsingReflectionInSingleClass(findState);
             }
+            // 跳到父类，继续找出订阅者方法
             findState.moveToSuperclass();
         }
         return getMethodsAndRelease(findState);
@@ -147,6 +149,15 @@ class SubscriberMethodFinder {
         return getMethodsAndRelease(findState);
     }
 
+
+    /**
+     * 所以通过上面的代码，很明显就可以看出，是通过反射拿到每一个方法的修饰符信息，注解信息，参数信息，
+     * 从上面的代码很明显就知道，我们的订阅方法必须有且只有一个参数，否则会抛出异常的，而且订阅方法必须是public修饰的，
+     * 而且不是静态、不是抽象方法，否者也会抛出异常的，最后将合法的订阅方法都存到了一个findState.subscriberMethods集合中了，
+     * 最后在findUsingReflectionInSingleClass(findState);的调用方发处调用了
+     return getMethodsAndRelease(findState);返回了出去了一个List<SubscriberMethod>集合
+     * @param findState
+     */
     private void findUsingReflectionInSingleClass(FindState findState) {
         Method[] methods;
         try {
@@ -159,12 +170,15 @@ class SubscriberMethodFinder {
         }
         for (Method method : methods) {
             int modifiers = method.getModifiers();
+            // 必须为pulic，不能为static，abstract等
             if ((modifiers & Modifier.PUBLIC) != 0 && (modifiers & MODIFIERS_IGNORE) == 0) {
                 Class<?>[] parameterTypes = method.getParameterTypes();
+                // 只能有个一个参数
                 if (parameterTypes.length == 1) {
                     Subscribe subscribeAnnotation = method.getAnnotation(Subscribe.class);
+                    // 过滤出有Subscribbe注释的方法
                     if (subscribeAnnotation != null) {
-                        Class<?> eventType = parameterTypes[0];
+                        Class<?> eventType = parameterTypes[0];   // 获取Event事件类 XXEvent
                         if (findState.checkAdd(method, eventType)) {
                             ThreadMode threadMode = subscribeAnnotation.threadMode();
                             findState.subscriberMethods.add(new SubscriberMethod(method, eventType, threadMode,
@@ -220,10 +234,12 @@ class SubscriberMethodFinder {
             // 2 level check: 1st level with event type only (fast), 2nd level with complete signature when required.
             // Usually a subscriber doesn't have methods listening to the same event type.
             Object existing = anyMethodByEventType.put(eventType, method);
+            // 保证一个订阅者不能有多个函数监听同一个事件
             if (existing == null) {
                 return true;
             } else {
                 if (existing instanceof Method) {
+                    // 通过函数签名去比对
                     if (!checkAddWithMethodSignature((Method) existing, eventType)) {
                         // Paranoia check
                         throw new IllegalStateException();
@@ -253,6 +269,7 @@ class SubscriberMethodFinder {
             }
         }
 
+        // 跳转到clazz类
         void moveToSuperclass() {
             if (skipSuperClasses) {
                 clazz = null;

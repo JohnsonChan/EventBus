@@ -18,6 +18,13 @@ package org.greenrobot.eventbus;
 import java.lang.reflect.Method;
 
 /** Used internally by EventBus and generated subscriber indexes. */
+/**
+很明显从这个SubscriberMethod 类的成员变量就能看出来，这是一个封装了一个关于Method的信息的对象，
+ 这些信息包括  final Method method(反射方法对象)对象、 final ThreadMode threadMode(线程模式)对象、
+ final Class<?> eventType(事件类型，方法中的参数)对象、final int priority(权限) 标记、
+ final boolean sticky(是否sticky类型)标记、 String methodString(方法描述字串) 用来提高两个SubscriberMethod对象比较效率和准确性的。
+所以这类就这么简单，就是封装了一个Mehtod的全部信息的
+ */
 public class SubscriberMethod {
     final Method method;
     final ThreadMode threadMode;

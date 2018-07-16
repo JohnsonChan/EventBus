@@ -27,6 +27,17 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface Subscribe {
+    // 注解实体类，和Override.class实现相识
+
+    /**
+     * 这么实现，你就可以这么写onXXEvent函数了
+     * 如下方注释
+     */
+//    @Subscribe(threadMode = ThreadMode.MAIN,priority = 0,sticky = true)
+//    public void onShowAddPointEvent(ShowAddPointEvent event) {
+//
+//    }
+
     ThreadMode threadMode() default ThreadMode.POSTING;
 
     /**

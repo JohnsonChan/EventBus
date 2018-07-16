@@ -136,6 +136,8 @@ public class EventBus {
      * Subscribers have event handling methods that must be annotated by {@link Subscribe}.
      * The {@link Subscribe} annotation also allows configuration like {@link
      * ThreadMode} and priority.
+     * 注册给定的订阅者以接受事件，订阅者在不想接收事件时必须反注册
+     * 订阅者被处理的的方法需要添加注释 @Subscrible, Subbscrible还可以配置线程模式及优先级别
      */
     public void register(Object subscriber) {
         Class<?> subscriberClass = subscriber.getClass();
@@ -148,15 +150,17 @@ public class EventBus {
     }
 
     // Must be called in synchronized block
+    // 同步锁里运行
     private void subscribe(Object subscriber, SubscriberMethod subscriberMethod) {
         Class<?> eventType = subscriberMethod.eventType;
         Subscription newSubscription = new Subscription(subscriber, subscriberMethod);
-        CopyOnWriteArrayList<Subscription> subscriptions = subscriptionsByEventType.get(eventType);
+        CopyOnWriteArrayList<Subscription> subscriptions = subscriptionsByEventType.get(eventType); // 获取事件对应的订阅者表（类和订阅方法的对应表）
         if (subscriptions == null) {
             subscriptions = new CopyOnWriteArrayList<>();
             subscriptionsByEventType.put(eventType, subscriptions);
         } else {
             if (subscriptions.contains(newSubscription)) {
+                // 存在重复注册
                 throw new EventBusException("Subscriber " + subscriber.getClass() + " already registered to event "
                         + eventType);
             }
@@ -164,6 +168,7 @@ public class EventBus {
 
         int size = subscriptions.size();
         for (int i = 0; i <= size; i++) {
+            // 这里看不明白，小于就不添加？
             if (i == size || subscriberMethod.priority > subscriptions.get(i).subscriberMethod.priority) {
                 subscriptions.add(i, newSubscription);
                 break;
@@ -404,6 +409,7 @@ public class EventBus {
         synchronized (this) {
             subscriptions = subscriptionsByEventType.get(eventClass);
         }
+        // 通过事件类，找出所有订阅者和方法的关联类列表，
         if (subscriptions != null && !subscriptions.isEmpty()) {
             for (Subscription subscription : subscriptions) {
                 postingState.event = event;
@@ -433,6 +439,7 @@ public class EventBus {
                 break;
             case MAIN:
                 if (isMainThread) {
+                    // 当前post为主线程，直接调用
                     invokeSubscriber(subscription, event);
                 } else {
                     mainThreadPoster.enqueue(subscription, event);
@@ -461,7 +468,8 @@ public class EventBus {
         }
     }
 
-    /** Looks up all Class objects including super classes and interfaces. Should also work for interfaces. */
+    /** Looks up all Class objects including super classes and interfaces. Should also work for interfaces.
+     * 获取eventClass所有父类的后者接口类型的class对象，存到eventTypes 集合中 */
     private static List<Class<?>> lookupAllEventTypes(Class<?> eventClass) {
         synchronized (eventTypesCache) {
             List<Class<?>> eventTypes = eventTypesCache.get(eventClass);
@@ -540,7 +548,9 @@ public class EventBus {
         }
     }
 
-    /** For ThreadLocal, much faster to set (and get multiple values). */
+    /** For ThreadLocal, much faster to set (and get multiple values).
+     * 记录一个线程事件post状态的实体
+     * */
     final static class PostingThreadState {
         final List<Object> eventQueue = new ArrayList<>();
         boolean isPosting;

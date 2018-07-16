@@ -15,6 +15,9 @@
  */
 package org.greenrobot.eventbus;
 
+/**
+ * 其实就是很简单的一个对象，我们可以看做一个简单的java bean就好了，他的功能就是封装了一个订阅者实体对象。关联订阅者类和订阅函数的关系
+ */
 final class Subscription {
     final Object subscriber;
     final SubscriberMethod subscriberMethod;
