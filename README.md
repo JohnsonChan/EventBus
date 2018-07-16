@@ -56,7 +56,7 @@ Read the full [getting started guide](http://greenrobot.org/eventbus/documentati
 
 添加 EventBus 到你的项目
 ----------------------------
-<a href="https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.greenrobot%22%20AND%20a%3A%22eventbus%22"><img src="https://img.shields.io/maven-central/v/org.greenrobot/eventbus.svg"></a>
+[![Build Status](https://img.shields.io/maven-central/v/org.greenrobot/eventbus.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.greenrobot%22%20AND%20a%3A%22eventbus%22)
 
 通过 Gradle:
 ```gradle
